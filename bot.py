@@ -1,42 +1,56 @@
-@l313l.on(admin_cmd(outgoing=True, pattern=r"ميمز (\S+) (.+)"))
-async def Hussein(event):
-    url = event.pattern_match.group(1)
-    lMl10l = event.pattern_match.group(2)
-    add_link(lMl10l, url)
-    await event.edit(f"**᯽︙ تم اضافة البصمة {lMl10l} بنجاح ✓ **")
+import random
+import telebot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+bot = telebot.TeleBot('6387632922:AAFHZLAxufgGRByVOxpb2FEhJNhhwcKakj8')
 
-@l313l.on(admin_cmd(outgoing=True, pattern="?(.*)"))
-async def Hussein(event):
-    lMl10l = event.pattern_match.group(1)
-    Joker = await reply_id(event)
-    url = get_link(lMl10l)
-    if url:
-        await event.client.send_file(event.chat_id, url, parse_mode="html", reply_to=Joker)
-        await event.delete()
+game_active = False
+number = None
+max_attempts = 3
+attempts = 0
 
+@bot.message_handler(commands=['start'])
+def start(message):
+    global game_active, attempts
+    game_active = False
+    attempts = 0
 
-@l313l.on(admin_cmd(outgoing=True, pattern=r"ميمز (\S+) ([\w\W]+)"))
-async def Hussein(event):
-    url = event.pattern_match.group(1)
-    lMl10l = event.pattern_match.group(2)
-    add_link(lMl10l, url)
-    await event.edit(f"**᯽︙ تم اضافة البصمة {lMl10l} بنجاح ✓ **")
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("ابدأ اللعبة", callback_data="start_game"))
+    bot.send_message(message.chat.id, 'اهلاً حياك الله! اضغط على الزر لبدء اللعبة.', reply_markup=markup)
 
-
-@l313l.on(admin_cmd(outgoing=True, pattern="قائمة الميمز"))
-async def list_aljoker(event):
-    links = SESSION.query(AljokerLink).all()
-    if links:
-        message = "**᯽︙ قائمة تخزين اوامر الميمز:**\n"
-        for link in links:
-            message += f"- البصمة : .`{link.key}`\n"
+@bot.callback_query_handler(func=lambda call: call.data == "start_game")
+def start_game(call):
+    global game_active, number, attempts
+    if not game_active:
+        number = random.randint(1, 10)
+        bot.send_message(call.message.chat.id, 'اختر أي رقم من 1 إلى 10 🌚 ')
+        game_active = True
+        attempts = 0
     else:
-        message = "**᯽︙ لاتوجد بصمات ميمز مخزونة حتى الآن**"
-    await event.edit(message)
+        bot.send_message(call.message.chat.id, 'اللعبة قيد التشغيل، يرجى انتهاء الجولة الحالية أولاً.')
 
+@bot.message_handler(func=lambda message: game_active)
+def handle_guess(message):
+    global game_active, number, attempts
+    try:
+        guess = int(message.text)
+        attempts += 1
 
-@l313l.on(admin_cmd(outgoing=True, pattern="ازالة_البصمات"))
-async def delete_all_aljoker(event):
-    SESSION.query(AljokerLink).delete()
-    await event.edit("**᯽︙ تم حذف جميع بصمات الميمز من القائمة **")
+        if guess == number:
+            bot.send_message(message.chat.id, "مُبارك فزتها بفخر 🥳")
+            video_url = "https://t.me/VIPABH/2"
+            bot.send_video(message.chat.id, video_url)
+            game_active = False
+        elif attempts >= max_attempts:
+            bot.send_message(message.chat.id, f"للأسف، لقد نفدت محاولاتك. الرقم الصحيح هو {number}.🌚")
+            video_url = "https://t.me/VIPABH/23"
+            
+            game_active = False
+        else:
+            bot.send_message(message.chat.id, "جرب مرة لخ، الرقم غلط💔")
+        video_url = "https://t.me/VIPABH/23"
+    except ValueError:
+        bot.send_message(message.chat.id, "يرجى إدخال رقم صحيح")
+
+bot.polling()
