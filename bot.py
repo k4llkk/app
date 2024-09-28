@@ -16,11 +16,12 @@ async def Hussein(event):
         await event.delete()
 
 
-@l313l.ar_cmd(pattern="ازالة(?:\s|$)([\s\S]*)")
-async def delete_aljoker(event):
-    lMl10l = event.pattern_match.group(1)
-    delete_link(lMl10l)
-    await event.edit(f"**᯽︙ تم حذف البصمة '{lMl10l}' بنجاح ✓**")
+@l313l.on(admin_cmd(outgoing=True, pattern=r"ميمز (\S+) ([\w\W]+)"))
+async def Hussein(event):
+    url = event.pattern_match.group(1)
+    lMl10l = event.pattern_match.group(2)
+    add_link(lMl10l, url)
+    await event.edit(f"**᯽︙ تم اضافة البصمة {lMl10l} بنجاح ✓ **")
 
 
 @l313l.on(admin_cmd(outgoing=True, pattern="قائمة الميمز"))
